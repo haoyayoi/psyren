@@ -1,6 +1,6 @@
 use strict;
-use Test::More tests => 3;
+use warnings;
+use Test::More tests => 2;
 
 BEGIN { use_ok 'PSYREN' }
-BEGIN { use_ok 'PSYREN::Drift' }
-BEGIN { use_ok 'PSYREN::Config' }
+BEGIN { use_ok 'PSYREN::Base' }

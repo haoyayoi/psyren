@@ -1,9 +1,8 @@
 package PSYREN::Controller;
-use warnings;
 use strict;
+use warnings;
+use base qw/PSYREN::Base/;
 use PSYREN::Command::Twitter;
-
-sub new { bless {}, shift }
 
 sub dispatch_index { 'index' }
 

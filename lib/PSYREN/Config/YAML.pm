@@ -1,7 +1,6 @@
 package PSYREN::Config::YAML;
 use warnings;
 use strict;
-use base 'PSYREN';
 use YAML::Syck;
 use File::Slurp;
 our $VERSION = '0.09';

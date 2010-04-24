@@ -1,6 +1,7 @@
 package PSYREN::Dispatcher;
-use warnings;
 use strict;
+use warnings;
+use base qw/PSYREN::Base/;
 use HTTP::Engine;
 use PSYREN::Controller;
 use PSYREN::Config;
@@ -47,7 +48,7 @@ __END__
 
 =head1 PSYREN::Dispatcher
 
-PSYREN::Dispatcher - PSYREN dispatcher for http request.
+PSYREN::Dispatcher - PSYREN dispatcher for request.
 
 =head1 SYNOPSIS
 
@@ -56,7 +57,7 @@ PSYREN::Dispatcher - PSYREN dispatcher for http request.
 
 =head1 DESCRIPTION
 
-PSYREN::Dispatcher is Dispatcher for http request on PSYREN.
+PSYREN::Dispatcher is Dispatcher for request on PSYREN.
 
 =head1 AUTHOR
 

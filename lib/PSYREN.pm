@@ -1,11 +1,13 @@
 package PSYREN;
-
 use strict;
 use warnings;
+use base qw/PSYREN::Base/;
 use PSYREN::Dispatcher;
 our $VERSION = '0.01';
 
-PSYREN::Dispatcher->setup();
+sub setup {
+    PSYREN::Dispatcher->new->setup;
+}
 
 1;
 __END__
