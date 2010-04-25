@@ -2,22 +2,14 @@ package PSYREN::Dispatcher;
 use strict;
 use warnings;
 use base qw/PSYREN::Base/;
-use HTTP::Engine;
 use PSYREN::Controller;
 use PSYREN::Config;
+use PSYREN::Engine;
 
 sub setup {
+    my ( $self, $args ) = @_;
     my $config = PSYREN::Config->new->instance->{handler};
-    HTTP::Engine->new(
-        interface => {
-            module => $config->{module},
-            args   => {
-                host => $config->{args}->{host},
-                port => $config->{args}->{port},
-            },
-            request_handler => 'PSYREN::Dispatcher::handle_request',
-        },
-    )->run;
+    PSYREN::Engine->new($args);
 }
 
 sub handle_request {
@@ -53,7 +45,7 @@ PSYREN::Dispatcher - PSYREN dispatcher for request.
 =head1 SYNOPSIS
 
   use PSYREN::Dispatcher;
-  PSYREN::Dispatcher->run();
+  PSYREN::Dispatcher->new->setup;
 
 =head1 DESCRIPTION
 
