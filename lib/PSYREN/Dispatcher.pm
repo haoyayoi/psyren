@@ -5,11 +5,12 @@ use base qw/PSYREN::Base/;
 use PSYREN::Controller;
 use PSYREN::Config;
 use PSYREN::Engine;
+use PSYREN::Response;
 
 sub setup {
     my ( $self, $args ) = @_;
     my $config = PSYREN::Config->new->instance->{handler};
-    PSYREN::Engine->new($args);
+    PSYREN::Engine->new->setup($args);
 }
 
 sub handle_request {
@@ -29,10 +30,7 @@ sub handle_request {
             $data = $controller->$call;
         }
     }
-    return HTTP::Engine::Response->new(
-        status => $data->{status} || '404',
-        body   => $data->{body}   || '404 not found',
-    );
+    PSYREN::Response->new($data);
 }
 
 1;

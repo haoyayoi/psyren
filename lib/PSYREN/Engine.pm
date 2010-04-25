@@ -1,9 +1,11 @@
 package PSYREN::Engine;
 use strict;
 use warnings;
+use base qw/PSYREN::Base/;
 use HTTP::Engine;
+use PSYREN::Config;
 
-sub new {
+sub setup {
     my ( $self, $args ) = @_;
     my $config = PSYREN::Config->new->instance->{handler};
     HTTP::Engine->new(
