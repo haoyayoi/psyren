@@ -12,10 +12,10 @@ sub setup {
         interface => {
             module => $args->{module} || $config->{module},
             args   => {
-                host => $config->{args}->{host},
-                port => $config->{args}->{port},
+                host => $args->{host} || $config->{args}->{host},
+                port => $args->{port} || $config->{args}->{port},
             },
-            request_handler => 'PSYREN::Dispatcher::handle_request',
+            request_handler => $args->{req} || 'PSYREN::Dispatcher::handle_request',
         },
     );
 }

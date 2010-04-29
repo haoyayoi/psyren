@@ -9,7 +9,6 @@ use PSYREN::Response;
 
 sub setup {
     my ( $self, $args ) = @_;
-    my $config = PSYREN::Config->new->instance->{handler};
     PSYREN::Engine->new->setup($args);
 }
 
