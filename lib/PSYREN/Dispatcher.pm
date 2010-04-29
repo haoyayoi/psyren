@@ -26,6 +26,9 @@ sub handle_request {
         my $controller = PSYREN::Controller->new;
         if ( $controller->can("do_$method") ){
             my $call = "dispatch_$method";
+            if ( $call eq "dispatch_cb" ) {
+                
+            }
             $data = $controller->$call;
         }
     }

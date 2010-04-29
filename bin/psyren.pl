@@ -5,4 +5,5 @@ use warnings;
 use lib '../lib';
 use PSYREN;
 
-PSYREN->new->setup();
+my $c = PSYREN->new->setup();
+$c->run;

@@ -6,7 +6,7 @@ use PSYREN::Dispatcher;
 our $VERSION = '0.01';
 
 sub setup {
-    PSYREN::Dispatcher->new->setup->run;
+    PSYREN::Dispatcher->new->setup;
 }
 
 1;
