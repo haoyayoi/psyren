@@ -16,7 +16,16 @@ sub oauth {
         consumer_secret => $config->Twitter->{consumer_secret},
     );
     $nt->get_authorization_url( callback => $config->Twitter->{callback_url} );
-    
+    return {
+        cookies => {
+            oauth => {
+                value => {
+                    token => $nt->request_token,
+                    token => $nt->request_token_secret,
+                },
+            },
+        },
+    };
 }
 
 sub cb {

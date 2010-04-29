@@ -29,7 +29,13 @@ sub handle_request {
             $data = $controller->$call;
         }
     }
-    PSYREN::Response->new($data);
+    my $res = PSYREN::Response->new($data);
+    if ( $data->{cookies} ) {
+        for my $key ( keys %{$data->{cookies}} ) {
+            $res->cookies->{$key} = $data->{cookie};
+        }
+    }
+    return $res;
 }
 
 1;
