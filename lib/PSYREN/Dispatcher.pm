@@ -13,7 +13,8 @@ sub setup {
 }
 
 sub handle_request {
-    my $method = shift->{uri}->path;
+    my $res    = shift;
+    my $method = $res->{uri}->path;
     
     $method =~ s/\//_/g;
     $method =~ s/_$//;
@@ -27,7 +28,8 @@ sub handle_request {
         if ( $controller->can("do_$method") ){
             my $call = "dispatch_$method";
             if ( $call eq "dispatch_cb" ) {
-                
+                $data->{cookie}   = $res->cookies->{oauth}->value;
+                $data->{verifier} = $res->param('oauth_verifier');
             }
             $data = $controller->$call;
         }
