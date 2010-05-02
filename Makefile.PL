@@ -9,6 +9,7 @@ requires 'Net::Twitter';
 requires 'Exporter';
 requires 'YAML::Syck';
 requires 'File::Slurp';
+requires 'TokyoTyrant';
 
 tests 't/*.t';
 author_tests 'xt';

@@ -5,7 +5,7 @@ use base qw/PSYREN::Command Class::Accessor::Fast/;
 use Net::Twitter;
 use PSYREN::Config;
 use PSYREN::Response;
-__PACKAGE__->follow_best_practice;
+use PSYREN::Model::TokyoTyrant;
 __PACKAGE__->mk_accessors( qw/name/ );
 
 sub oauth {
@@ -29,7 +29,25 @@ sub oauth {
 }
 
 sub cb {
+    my ( $self, $args ) = @_;
+    my $config = PSYREN::Config->new->instance;
+    my $nt = Net::Twitter::OAuth->new(
+        traits          => [ qw/API::REST OAuth/ ],
+        consumer_key    => $config->Twitter->{consumer_key},
+        consumer_secret => $config->Twitter->{consumer_secret},
+    );
+    $nt->request_token( $args->{cookie}->{token} );
+    $nt->request_token_secret( $args->{cookie}->{token_secret} );
     
+    my ( $access_token, $access_token_secret, $user_id, $screen_name )
+        = $nt->request_access_token( verifier => $args->{verifier} );
+    my $tt = $self->tt;
+    $tt->dbi->open( $tt->config->{host}, $tt->config->{port} );
+    $tt->dbi->put("tw_access_token", $access_token);
+    $tt->dbi->put("tw_access_token_secret", $access_token_secret);
+    $tt->dbi->put("tw_user_id", $user_id);
+    $tt->dbi->put("tw_screen_name", $screen_name);
+    $tt->dbi->close();
 }
 
-1;    
+1;

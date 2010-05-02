@@ -6,6 +6,14 @@ use PSYREN::Command::Twitter;
 
 sub dispatch_index { 'index' }
 
-sub dispatch_callback {}
+sub dispatch_twitter_oauth {
+    my ( $self, $args ) = @_;
+    PSYREN::Command::Twitter->new->oauth;
+}
+
+sub dispatch_twitter_cb {
+    my ( $self, $args ) = @_;
+    PSYREN::Command::Twitter->new->cb($args);
+}
 
 1;
