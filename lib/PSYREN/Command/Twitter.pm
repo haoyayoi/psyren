@@ -12,20 +12,21 @@ sub oauth {
     my $config = PSYREN::Config->new->instance;
     my $nt = Net::Twitter->new(
         traits          => [qw/API::REST OAuth/],
-        consumer_key    => $config->Twitter->{consumer_key},
-        consumer_secret => $config->Twitter->{consumer_secret},
+        consumer_key    => $config->{twitter}->{consumer_key},
+        consumer_secret => $config->{twitter}->{consumer_secret},
     );
-    my $url = $nt->get_authorization_url( callback => $config->Twitter->{callback_url} );
+    my $url = $nt->get_authorization_url( callback => $config->{twitter}->{callback} );
 
-    my $res = PSYREN::Response->new({ status => 200 });
+    my $res = PSYREN::Response->new({ status  => 301 });
+    $res->set_http_response( $res );
+    $res->headers->header( Location => $url );
     $res->cookies->{oauth} = {
         value => {
             token        => $nt->request_token,
             token_secret => $nt->request_token_secret,
         },
     };
-
-    $res->redirect( $url );
+    return $res;
 }
 
 sub cb {
@@ -33,8 +34,8 @@ sub cb {
     my $config = PSYREN::Config->new->instance;
     my $nt = Net::Twitter::OAuth->new(
         traits          => [ qw/API::REST OAuth/ ],
-        consumer_key    => $config->Twitter->{consumer_key},
-        consumer_secret => $config->Twitter->{consumer_secret},
+        consumer_key    => $config->{twitter}->{consumer_key},
+        consumer_secret => $config->{twitter}->{consumer_secret},
     );
     $nt->request_token( $args->{cookie}->{token} );
     $nt->request_token_secret( $args->{cookie}->{token_secret} );

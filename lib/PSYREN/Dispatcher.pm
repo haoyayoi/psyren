@@ -6,7 +6,7 @@ use PSYREN::Controller;
 use PSYREN::Config;
 use PSYREN::Engine;
 use PSYREN::Response;
-use Data::Dumper;
+
 sub setup {
     my ( $self, $args ) = @_;
     PSYREN::Engine->new->setup($args);
@@ -25,10 +25,11 @@ sub handle_request {
     {
         no strict 'refs';
         my $controller = PSYREN::Controller->new;
-        if ( $controller->can("do_$method") ){
+        if ( $controller->can("dispatch_$method") ){
             my $call = "dispatch_$method";
             my $args = {};
             if ( $call eq "dispatch_twitter_cb" ) {
+                warn $call;
                 $args->{cookie}   = $res->cookies->{oauth}->value;
                 $args->{verifier} = $res->param('oauth_verifier');
             }
