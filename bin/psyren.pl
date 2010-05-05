@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 use lib '../lib';
-use PSYREN;
+use PSYREN::Dispatcher;
 
-my $c = PSYREN->new->setup();
-$c->run;
+PSYREN::Dispatcher->new->setup->run;
