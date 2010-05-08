@@ -46,3 +46,4 @@ sub _load {
     return YAML::Syck::Load( $config_data );
 }
 
+1;

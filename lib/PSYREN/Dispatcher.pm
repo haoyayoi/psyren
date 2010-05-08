@@ -1,20 +1,26 @@
 package PSYREN::Dispatcher;
 use strict;
 use warnings;
-use base qw/PSYREN::Base/;
+use base qw/Class::Accessor::Fast/;
 use PSYREN::Controller;
 use PSYREN::Config;
-use PSYREN::Engine;
 use PSYREN::Response;
+use UNIVERSAL::require;
+use Carp qw/croak/;
 
-sub setup {
-    my ( $self, $args ) = @_;
-    PSYREN::Engine->new->setup($args);
+__PACKAGE__->mk_accessors( qw/req/ );
+
+sub new {
+    my ( $class, $req ) = @_;
+    croak( q/ need request / ) unless $req;
+    my $self = bless {}, $class;
+    $self->req($req);
+    return $self;
 }
 
-sub handle_request {
-    my $res    = shift;
-    my $method = $res->{uri}->path;
+sub finalize {
+    my $self   = $_[0];
+    my $method = $self->req->uri->path;
     
     $method =~ s/\//_/g;
     $method =~ s/_$//;
@@ -30,8 +36,8 @@ sub handle_request {
             my $args = {};
             if ( $call eq "dispatch_twitter_cb" ) {
                 warn $call;
-                $args->{cookie}   = $res->cookies->{oauth}->value;
-                $args->{verifier} = $res->param('oauth_verifier');
+                $args->{cookie}   = $self->req->cookies->{oauth}->value;
+                $args->{verifier} = $self->req->param('oauth_verifier');
             }
             $data = $controller->$call($args);
         }
