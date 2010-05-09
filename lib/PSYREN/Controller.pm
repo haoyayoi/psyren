@@ -1,10 +1,17 @@
 package PSYREN::Controller;
 use strict;
 use warnings;
-use base qw/PSYREN::Base/;
 use PSYREN::Command::Twitter;
+use Text::MicroTemplate;
 
-sub dispatch_index { 'index' }
+sub new {
+    my $class = $_[0];
+    return bless {}, $class;
+}
+
+sub dispatch_index { 
+    { body =>'index', status => 200 }
+}
 
 sub dispatch_twitter_oauth {
     my ( $self, $args ) = @_;
@@ -14,7 +21,6 @@ sub dispatch_twitter_oauth {
 sub dispatch_twitter_cb {
     my ( $self, $args ) = @_;
     PSYREN::Command::Twitter->new->cb($args);
-    
 }
 
 1;

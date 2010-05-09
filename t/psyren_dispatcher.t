@@ -1,9 +1,12 @@
 use strict;
 use warnings;
-use Test::More tests => 2;
+use Test::More tests => 1;
 use PSYREN::Dispatcher;
 
-my $dispatcher = PSYREN::Dispatcher->new;
-isa_ok ( $dispatcher, "PSYREN::Dispatcher" );
-can_ok ( $dispatcher, qw/new finalize/ );
+eval {
+    my $dispatcher = PSYREN::Dispatcher->new;
+};
+if ($@) {
+    like ( $@, qr/need request/, "err test" );
+}
 

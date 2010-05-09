@@ -1,22 +1,19 @@
 package PSYREN::Dispatcher;
 use strict;
 use warnings;
-use base qw/Class::Accessor::Fast/;
 use PSYREN::Controller;
 use PSYREN::Config;
 use PSYREN::Response;
 use UNIVERSAL::require;
 use Carp qw/croak/;
 
-__PACKAGE__->mk_accessors( qw/req/ );
-
 sub new {
     my ( $class, $req ) = @_;
     croak( q/ need request / ) unless $req;
-    my $self = bless {}, $class;
-    $self->req($req);
-    return $self;
+    return bless{ _req => $req }, $class;
 }
+
+sub req { $_[0]->{_req} }
 
 sub finalize {
     my $self   = $_[0];
@@ -38,7 +35,7 @@ sub finalize {
                 warn $call;
                 $args->{cookie}   = $self->req->cookies->{oauth}->value;
                 $args->{verifier} = $self->req->param('oauth_verifier');
-            }
+            } 
             $data = $controller->$call($args);
         }
     }
@@ -55,7 +52,7 @@ PSYREN::Dispatcher - PSYREN dispatcher for request.
 =head1 SYNOPSIS
 
   use PSYREN::Dispatcher;
-  PSYREN::Dispatcher->new->setup;
+  PSYREN::Dispatcher->new($req)->finalize;
 
 =head1 DESCRIPTION
 

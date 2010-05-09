@@ -1,17 +1,15 @@
 package PSYREN::Command::Twitter;
 use strict;
 use warnings;
-use base qw/PSYREN::Command Class::Accessor::Fast/;
-use Net::Twitter;
+use base qw/PSYREN::Command/;
+use Net::Twitter::Lite;
 use PSYREN::Config;
 use PSYREN::Response;
 use PSYREN::Model::TokyoTyrant;
-__PACKAGE__->mk_accessors( qw/name/ );
 
 sub oauth {
     my $config = PSYREN::Config->new->instance;
-    my $nt = Net::Twitter->new(
-        traits          => [qw/API::REST OAuth/],
+    my $nt = Net::Twitter::Lite->new(
         consumer_key    => $config->{twitter}->{consumer_key},
         consumer_secret => $config->{twitter}->{consumer_secret},
     );

@@ -2,14 +2,20 @@ package PSYREN::Response;
 use strict;
 use warnings;
 use base qw/PSYREN::Base/;
-use HTTP::Engine::Response;
+use Data::Dumper;
 
 sub new{
     my ( $self, $args ) = @_;
-    HTTP::Engine::Response->new(
-        status  => $args->{status} || '404',
-        body    => $args->{body}   || '404 not found',
-    );
+    unless ( ref $args eq "HASH" ) {
+        $args = {
+            status => 404,
+            body   => "404 not found",
+        };
+    }
+    return [ $args->{status},
+             [ 'Content-Type' => 'text/plain' ],
+             [ $args->{body} ],
+           ];
 }
 
 1;
