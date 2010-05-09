@@ -6,6 +6,7 @@ use PSYREN::Config;
 use PSYREN::Response;
 use UNIVERSAL::require;
 use Carp qw/croak/;
+use Data::Dumper;
 
 sub new {
     my ( $class, $req ) = @_;
@@ -17,17 +18,45 @@ sub req { $_[0]->{_req} }
 
 sub finalize {
     my $self   = $_[0];
-    my $method = $self->req->uri->path;
+    my $path = $self->req->uri->path;
     
-    $method =~ s/\//_/g;
-    $method =~ s/_$//;
-    $method =~ s/^_//;
+    $path =~ s{/$}{};
+    $path =~ s{^/}{};
+    
+    my $method;
+    my $subdir = "";
+    my $ctrl_class = "PSYREN::Controller";
+    
+    if ( index( $path, "/" ) ) {
+        my @path = split( '/', $path );
+        $method = pop @path;
+        
+        if (@path) {
+            for my $dir ( @path ) {
+                $dir  =~ tr/A-Z/a-z/;
+                $dir  =~ /^(\w)/;
+                my $head = $1;
+                $head =~ tr/a-z/A-Z/;
+                $dir  =~ s/^./$head/;
+                $subdir .= "::$dir";
+            }
+        }
+        if ("$ctrl_class$subdir"->use) {
+            "$ctrl_class$subdir"->require;
+            $ctrl_class = "$ctrl_class$subdir"; 
+        } else {
+            return;
+        }
+    } else {
+        $method = $path;
+    }
+    $method = "index" unless $method;
     $method =~ tr/A-Z/a-z/;
-    
     my $data;
+
     {
         no strict 'refs';
-        my $controller = PSYREN::Controller->new;
+        my $controller = $ctrl_class->new;
         if ( $controller->can("dispatch_$method") ){
             my $call = "dispatch_$method";
             my $args = {};
@@ -37,9 +66,15 @@ sub finalize {
                 $args->{verifier} = $self->req->param('oauth_verifier');
             } 
             $data = $controller->$call($args);
+        } else {
+            $data =
+                [ 404 ,
+                    [ "Content-Type" => "text/html" ],
+                    [ "404 not found" ],
+                ];
         }
     }
-    PSYREN::Response->new($data);
+    return $data;
 }
 
 1;
@@ -52,7 +87,7 @@ PSYREN::Dispatcher - PSYREN dispatcher for request.
 =head1 SYNOPSIS
 
   use PSYREN::Dispatcher;
-  PSYREN::Dispatcher->new($req)->finalize;
+  PSYREN::Dispatcher->new($req);
 
 =head1 DESCRIPTION
 
@@ -63,8 +98,6 @@ PSYREN::Dispatcher is Dispatcher for request on PSYREN.
 haoyayoi E<lt>st.hao.yayoi@gmail.comE<gt>
 
 =head1 SEE ALSO
-
-HTTP::Engine
 
 =head1 LICENSE
 

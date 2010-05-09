@@ -2,10 +2,9 @@ use inc::Module::Install;
 name 'PSYREN';
 all_from 'lib/PSYREN/Base.pm';
 
-requires 'HTTP::Engine';
-requires 'Class::Accessor::Fast';
+requires 'Plack::Request';
 requires 'Path::Class';
-requires 'Net::Twitter';
+requires 'Net::Twitter::Lite';
 requires 'Exporter';
 requires 'YAML::Syck';
 requires 'File::Slurp';
