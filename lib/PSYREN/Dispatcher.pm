@@ -6,13 +6,11 @@ use PSYREN::Config;
 use PSYREN::Response;
 use UNIVERSAL::require;
 use Carp qw/croak/;
+use base qw/Class::Accessor::Fast/;
+use CGI;
 use Data::Dumper;
 
-sub new {
-    my ( $class, $req ) = @_;
-    croak( q/ need request / ) unless $req;
-    return bless{ _req => $req }, $class;
-}
+__PACKAGE__->mk_accessors( qw/query/ );
 
 sub req { $_[0]->{_req} }
 
