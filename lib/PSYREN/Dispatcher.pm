@@ -8,22 +8,53 @@ use UNIVERSAL::require;
 use Carp qw/croak/;
 use base qw/Class::Accessor::Fast/;
 use CGI;
+use URI;
 use Data::Dumper;
 
-__PACKAGE__->mk_accessors( qw/query/ );
+__PACKAGE__->mk_accessors( qw/query uri method/ );
 
-sub req { $_[0]->{_req} }
+sub new {
+    my ( $class, $args ) = @_;
+    my $self = bless $args, $class;
+    
+    $self->uri( URI->new($self->query->uri()) );
+    my $path = $self->uri->path || "/";
+    if ( length($path) - 1 == rindex($path, "/") ) {
+        $self->method("index");
+    } else {
+        my @path = split( '/', $path );
+        $self->method( pop @path );
+        if (@path) {
+            for my $dir ( @path ) {
+                $dir  =~ tr/A-Z/a-z/;
+                $dir  =~ /^(\w)/;
+                my $head = $1;
+                $head =~ tr/a-z/A-Z/;
+                $dir  =~ s/^./$head/;
+                $subdir .= "::$dir";
+            }
+        }
+    }
+}
+
+my $ctrl_base = "PSYREN::Controller";
+
+sub uri { URI->new( $_[0]->query->uri() ) }
+
+sub method {
+    my $self = $_[0];
+    my $path = $self->uri->path;
+    if ( length rindex( $path, "/" );
 
 sub finalize {
-    my $self   = $_[0];
-    my $path = $self->req->uri->path;
+    my $self = $_[0];
+    my $path = $self->uri->path;
     
     $path =~ s{/$}{};
     $path =~ s{^/}{};
     
     my $method;
     my $subdir = "";
-    my $ctrl_class = "PSYREN::Controller";
     
     if ( index( $path, "/" ) ) {
         my @path = split( '/', $path );
@@ -39,6 +70,7 @@ sub finalize {
                 $subdir .= "::$dir";
             }
         }
+        
         if ("$ctrl_class$subdir"->use) {
             "$ctrl_class$subdir"->require;
             $ctrl_class = "$ctrl_class$subdir"; 
