@@ -18,12 +18,16 @@ sub new {
     my $self = bless $args, $class;
     
     $self->uri( URI->new($self->query->uri()) );
+    my @path = split( '/', $self->path );
     if ( $self->is_index ) {
         $self->method("index");
     } else {
         my @path = split( '/', $self->path );
         $self->method( pop @path );
         my $subdir = join('', map { $self->conv_to_namespace($_) } @path);
+        if ("$ctrl_class$subdir"->use) {
+            "$ctrl_class$subdir"->require;
+            $ctrl_class = "$ctrl_class$subdir"; 
     #    $ctrl_class = "$ctrl_class$subdir"; 
     }
 }
@@ -38,14 +42,14 @@ sub conv_to_namespace {
     return "::$dir";
 }
 
+sub base_class { "PSYREN::Controller" }
+
 sub path { $_[0]->uri->path || "/" }
 
 sub is_index {
     my $path = $_[0]->path;
     length($path) - 1 == rindex($path, "/");
 }
-
-my $ctrl_base = "PSYREN::Controller";
 
 sub uri { URI->new( $_[0]->query->uri() ) }
 
