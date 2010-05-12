@@ -18,34 +18,38 @@ sub new {
     my $self = bless $args, $class;
     
     $self->uri( URI->new($self->query->uri()) );
-    my $path = $self->uri->path || "/";
-    if ( length($path) - 1 == rindex($path, "/") ) {
+    if ( $self->is_index ) {
         $self->method("index");
     } else {
-        my @path = split( '/', $path );
+        my @path = split( '/', $self->path );
         $self->method( pop @path );
-        if (@path) {
-            for my $dir ( @path ) {
-                $dir  =~ tr/A-Z/a-z/;
-                $dir  =~ /^(\w)/;
-                my $head = $1;
-                $head =~ tr/a-z/A-Z/;
-                $dir  =~ s/^./$head/;
-                $subdir .= "::$dir";
-            }
-        }
+        my $subdir = join('', map { $self->conv_to_namespace($_) } @path);
+    #    $ctrl_class = "$ctrl_class$subdir"; 
     }
+}
+
+sub conv_to_namespace {
+    my $dir = $_[1];
+    $dir  =~ tr/A-Z/a-z/;
+    $dir  =~ /^(\w)/;
+    my $head = $1;
+    $head =~ tr/a-z/A-Z/;
+    $dir  =~ s/^./$head/;
+    return "::$dir";
+}
+
+sub path { $_[0]->uri->path || "/" }
+
+sub is_index {
+    my $path = $_[0]->path;
+    length($path) - 1 == rindex($path, "/");
 }
 
 my $ctrl_base = "PSYREN::Controller";
 
 sub uri { URI->new( $_[0]->query->uri() ) }
 
-sub method {
-    my $self = $_[0];
-    my $path = $self->uri->path;
-    if ( length rindex( $path, "/" );
-
+__DATA__
 sub finalize {
     my $self = $_[0];
     my $path = $self->uri->path;
