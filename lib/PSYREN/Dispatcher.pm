@@ -5,13 +5,16 @@ use PSYREN::Controller;
 use PSYREN::Config;
 use PSYREN::Response;
 use UNIVERSAL::require;
+use String::CamelCase qw/decamelize/;
 use Carp qw/croak/;
 use base qw/Class::Accessor::Fast/;
 use CGI;
 use URI;
 use Data::Dumper;
 
-__PACKAGE__->mk_accessors( qw/query uri method/ );
+__PACKAGE__->mk_accessors( qw/query uri method controller/ );
+
+my $BASE_CONTROLLER = "PSYREN::Controller";
 
 sub new {
     my ( $class, $args ) = @_;
@@ -19,27 +22,20 @@ sub new {
     
     $self->uri( URI->new($self->query->uri()) );
     my @path = split( '/', $self->path );
-    if ( $self->is_index ) {
-        $self->method("index");
-    } else {
-        my @path = split( '/', $self->path );
-        $self->method( pop @path );
-        my $subdir = join('', map { $self->conv_to_namespace($_) } @path);
-        if ("$ctrl_class$subdir"->use) {
-            "$ctrl_class$subdir"->require;
-            $ctrl_class = "$ctrl_class$subdir"; 
-    #    $ctrl_class = "$ctrl_class$subdir"; 
-    }
+    $self->method( sub { $self->is_index ? 'index' : pop @path } );
+    my $subdir = join('', map { $self->conv_to_namespace($_) } @path);
+    $self->controller( sub {
+        my $build_package = "$BASE_CONTROLLER$subdir"->use ?
+            "$BASE_CONTROLLER$subdir" : "$BASE_CONTROLLER";
+        "$build_package"->require;
+        "$build_package"->new;
+    } );
 }
 
 sub conv_to_namespace {
     my $dir = $_[1];
     $dir  =~ tr/A-Z/a-z/;
-    $dir  =~ /^(\w)/;
-    my $head = $1;
-    $head =~ tr/a-z/A-Z/;
-    $dir  =~ s/^./$head/;
-    return "::$dir";
+    "::".decamelize( $dir );
 }
 
 sub base_class { "PSYREN::Controller" }
@@ -48,10 +44,9 @@ sub path { $_[0]->uri->path || "/" }
 
 sub is_index {
     my $path = $_[0]->path;
-    length($path) - 1 == rindex($path, "/");
+    length($path) - 1 == rindex($path, "/") || 
+        length($path) - 5 == rindex($path, "index");
 }
-
-sub uri { URI->new( $_[0]->query->uri() ) }
 
 __DATA__
 sub finalize {
