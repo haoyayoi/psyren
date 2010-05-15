@@ -30,6 +30,7 @@ sub dispatch_index {
     my $self = $_[0];
     $self->{status} = "200";
     $self->{body}   = "index";
+    print "index";
     return $self->_finalize;
 }
 

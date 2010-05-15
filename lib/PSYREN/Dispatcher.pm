@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use PSYREN::Controller;
 use PSYREN::Config;
-use PSYREN::Response;
 use UNIVERSAL::require;
 use String::CamelCase qw/decamelize/;
 use Carp qw/croak/;
@@ -29,7 +28,7 @@ sub new {
         my $build_package = "$BASE_CONTROLLER$subdir"->use ?
             "$BASE_CONTROLLER$subdir" : "$BASE_CONTROLLER";
         $build_package->require;
-        my $controller = $build_package->new;
+        $build_package->new;
     } );
     return $self;
 }
