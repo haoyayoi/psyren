@@ -18,18 +18,31 @@ my $BASE_CONTROLLER = "PSYREN::Controller";
 
 sub new {
     my ( $class, $args ) = @_;
+    croak 'need hashref' unless $args || ref $args eq "HASH";
     my $self = bless $args, $class;
-    
-    $self->uri( URI->new($self->query->uri()) );
+
+    $self->uri( URI->new( $self->query->url() ) );
     my @path = split( '/', $self->path );
-    $self->method( sub { $self->is_index ? 'index' : pop @path } );
+    $self->method( eval { $self->is_index ? 'index' : pop @path } );
     my $subdir = join('', map { $self->conv_to_namespace($_) } @path);
-    $self->controller( sub {
+    $self->controller( eval {
         my $build_package = "$BASE_CONTROLLER$subdir"->use ?
             "$BASE_CONTROLLER$subdir" : "$BASE_CONTROLLER";
-        "$build_package"->require;
-        "$build_package"->new;
+        $build_package->require;
+        my $controller = $build_package->new;
     } );
+    return $self;
+}
+
+sub finalize {
+    my $self = $_[0];
+    my $method = "dispatch_" . $self->method;
+    if ( $self->controller->can($method) ) {
+        $self->controller->$method;
+    } else {
+        my $ctrl = PSYREN::Controller->new;
+        $ctrl->dispatch_error("404");
+    }
 }
 
 sub conv_to_namespace {
@@ -120,7 +133,7 @@ PSYREN::Dispatcher - PSYREN dispatcher for request.
 =head1 SYNOPSIS
 
   use PSYREN::Dispatcher;
-  PSYREN::Dispatcher->new($req);
+  PSYREN::Dispatcher->new({ query => $req })->finalize;
 
 =head1 DESCRIPTION
 

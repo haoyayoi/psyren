@@ -16,5 +16,5 @@ author_tests 'xt';
 build_requires 'Test::More';
 use_test_base;
 auto_include;
-install_script 'bin/psyren.psgi';
+install_script 'bin/psyren.cgi';
 WriteAll;
