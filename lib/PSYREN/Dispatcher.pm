@@ -9,6 +9,7 @@ use Carp qw/croak/;
 use base qw/Class::Accessor::Fast/;
 use CGI;
 use URI;
+use URI::Escape qw/uri_unescape/;
 use Data::Dumper;
 
 __PACKAGE__->mk_accessors( qw/query uri method controller/ );
@@ -21,15 +22,10 @@ sub new {
     my $self = bless $args, $class;
 
     $self->uri( URI->new( $self->query->url() ) );
-    my @path = split( '/', $self->path );
-    $self->method( eval { $self->is_index ? 'index' : pop @path } );
-    my $subdir = join('', map { $self->conv_to_namespace($_) } @path);
-    $self->controller( eval {
-        my $build_package = "$BASE_CONTROLLER$subdir"->use ?
-            "$BASE_CONTROLLER$subdir" : "$BASE_CONTROLLER";
-        $build_package->require;
-        $build_package->new;
-    } );
+    my ( $package, $method )
+        = $self->path_to_class_and_method( $self->query->param('path') );
+    $self->method($method);
+    $self->controller( $self->make_controller_package($package) );
     return $self;
 }
 
@@ -39,87 +35,45 @@ sub finalize {
     if ( $self->controller->can($method) ) {
         $self->controller->$method;
     } else {
-        my $ctrl = PSYREN::Controller->new;
-        $ctrl->dispatch_error("404");
+        $self->controller->dispatch_error("404");
     }
 }
 
-sub conv_to_namespace {
-    my $dir = $_[1];
-    $dir  =~ tr/A-Z/a-z/;
-    "::".decamelize( $dir );
+sub path_to_class_and_method {
+    my ( $self, $path ) = @_;
+    return ( '', 'index' ) unless $path;
+
+    my $str = uri_unescape($path);
+    $str =~ s{([/]*)}{/}g;
+    my @path = split('/', $str);
+    my $method = $self->is_index($path) ? 'index' : pop @path;
+    my $class;
+    map { $class .= "::".decamelize($_) if $_ } @path;
+    return ($class, $method );
 }
 
-sub base_class { "PSYREN::Controller" }
-
-sub path { $_[0]->uri->path || "/" }
+sub make_controller_package {
+    my ( $self, $class ) = @_;
+    my $build_package =  !$class ?  "$BASE_CONTROLLER" :
+    "$BASE_CONTROLLER$class"->use ? "$BASE_CONTROLLER$class" :
+                                          "$BASE_CONTROLLER" ;
+    $build_package->require;
+    $build_package->new;
+}
 
 sub is_index {
-    my $path = $_[0]->path;
+    my ( $self, $path ) = @_;
     length($path) - 1 == rindex($path, "/") || 
         length($path) - 5 == rindex($path, "index");
 }
 
-__DATA__
-sub finalize {
-    my $self = $_[0];
-    my $path = $self->uri->path;
-    
-    $path =~ s{/$}{};
-    $path =~ s{^/}{};
-    
-    my $method;
-    my $subdir = "";
-    
-    if ( index( $path, "/" ) ) {
-        my @path = split( '/', $path );
-        $method = pop @path;
-        
-        if (@path) {
-            for my $dir ( @path ) {
-                $dir  =~ tr/A-Z/a-z/;
-                $dir  =~ /^(\w)/;
-                my $head = $1;
-                $head =~ tr/a-z/A-Z/;
-                $dir  =~ s/^./$head/;
-                $subdir .= "::$dir";
-            }
-        }
-        
-        if ("$ctrl_class$subdir"->use) {
-            "$ctrl_class$subdir"->require;
-            $ctrl_class = "$ctrl_class$subdir"; 
-        } else {
-            return;
-        }
-    } else {
-        $method = $path;
+sub twitter_oauth {
+    my $self = shift;
+    if ( $self->method eq "dispatch_twitter_cb" ) {
+        $self->{cookie}   = $self->query->cookies->{oauth}->value;
+        $self->{verifier} = $self->query->param('oauth_verifier');
     }
-    $method = "index" unless $method;
-    $method =~ tr/A-Z/a-z/;
-    my $data;
-
-    {
-        no strict 'refs';
-        my $controller = $ctrl_class->new;
-        if ( $controller->can("dispatch_$method") ){
-            my $call = "dispatch_$method";
-            my $args = {};
-            if ( $call eq "dispatch_twitter_cb" ) {
-                warn $call;
-                $args->{cookie}   = $self->req->cookies->{oauth}->value;
-                $args->{verifier} = $self->req->param('oauth_verifier');
-            } 
-            $data = $controller->$call($args);
-        } else {
-            $data =
-                [ 404 ,
-                    [ "Content-Type" => "text/html" ],
-                    [ "404 not found" ],
-                ];
-        }
-    }
-    return $data;
+    return $self;
 }
 
 1;

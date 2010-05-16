@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 3;
+use Test::More tests => 4;
 use PSYREN::Controller;
 
 my $controller = PSYREN::Controller->new;
