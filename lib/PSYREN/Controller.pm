@@ -2,18 +2,11 @@ package PSYREN::Controller;
 use strict;
 use warnings;
 use PSYREN::Command::Twitter;
-use Text::MicroTemplate::File;
 use base qw/Class::Accessor::Fast/;
-
-__PACKAGE__->mk_accessors( qw/TMT/ );
 
 sub new {
     my $class = $_[0];
     my $self = bless {}, $class;
-    $self->TMT( Text::MicroTemplate::File->new(
-        include_path => [ ],
-        use_cache    => 1,
-    ) );
     return $self;
 }
 

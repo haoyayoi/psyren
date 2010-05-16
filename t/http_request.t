@@ -12,7 +12,7 @@ filters({
     expected => "yaml",
 });
 
-plan tests => 2;
+plan tests => 3;
 
 run {
     my $block = shift;
@@ -35,8 +35,10 @@ __END__
 path:
   - index
   - 
+  - DUMMY
 --- expected
 content:
   - index
   - index
+  - ""
 
